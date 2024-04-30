@@ -1,20 +1,75 @@
-# A default Makefile for Create Go App project.
-# Author: Vic Shóstak <koddr.me@gmail.com> (https://github.com/koddr)
-# For more information, please visit https://github.com/create-go-app/cli
+.PHONY: clean critic security lint test build run
 
-.PHONY: test run build
+APP_NAME = apiserver
+BUILD_DIR = $(PWD)/build
+MIGRATIONS_FOLDER = $(PWD)/platform/migrations
+DATABASE_URL = mysql://AIM_Coding_Test-mysql/AIM_Coding_Test_DB?serverTimezone=UTC
 
-FRONTEND_PATH = $(PWD)/frontend
-BACKEND_PATH = $(PWD)/backend
+clean:
+	rm -rf ./build
 
-test:
-	@if [ -d "$(FRONTEND_PATH)" ]; then cd $(FRONTEND_PATH) && npm run test; fi
-	@if [ -d "$(BACKEND_PATH)" ]; then cd $(BACKEND_PATH) && go test ./...; fi
+critic:
+	gocritic check -enableAll ./...
 
-run: test
-	@if [ -d "$(FRONTEND_PATH)" ]; then cd $(FRONTEND_PATH) && npm run dev; fi
-	@if [ -d "$(BACKEND_PATH)" ]; then cd $(BACKEND_PATH) && $(MAKE) run; fi
+security:
+	gosec ./...
+
+lint:
+	golangci-lint run ./...
+
+test: clean critic security lint
+	go test -v -timeout 30s -coverprofile=cover.out -cover ./...
+	go tool cover -func=cover.out
 
 build: test
-	@if [ -d "$(FRONTEND_PATH)" ]; then cd $(FRONTEND_PATH) && npm run build; fi
-	@if [ -d "$(BACKEND_PATH)" ]; then cd $(BACKEND_PATH) && $(MAKE) build; fi
+	CGO_ENABLED=0 go build -ldflags="-w -s" -o $(BUILD_DIR)/$(APP_NAME) main.go
+
+run: swag build
+	$(BUILD_DIR)/$(APP_NAME)
+
+docker.run: docker.network docker.mysql swag docker.fiber docker.redis
+
+docker.network:
+	docker network inspect dev-network >/dev/null 2>&1 || \
+	docker network create -d bridge dev-network
+
+docker.fiber.build:
+	docker build -t fiber .
+
+docker.fiber: docker.fiber.build
+	docker run --rm -d \
+		--name AIM_Coding_Test-fiber \
+		--network dev-network \
+		-p 3000:3000 \
+		fiber
+
+docker.mysql:
+	docker run --rm -d \
+		--name AIM_Coding_Test-mysql \
+		--network dev-network \
+		-e MYSQL_USER_USER=dev \
+		-e MYSQL_PASSWORD= \
+		-e MYSQL_DB=AIM_Coding_Test_DB \
+		-p 3306:3306 \
+		mysql
+
+docker.redis:
+	docker run --rm -d \
+		--name AIM_Coding_Test-redis \
+		--network dev-network \
+		-p 6379:6379 \
+		redis
+
+docker.stop: docker.stop.fiber docker.stop.mysql docker.stop.redis
+
+docker.stop.fiber:
+	docker stop AIM_Coding_Test-fiber
+
+docker.stop.mysql:
+	docker stop AIM_Coding_Test-mysql
+
+docker.stop.redis:
+	docker stop AIM_Coding_Test-redis
+
+swag:
+	swag init

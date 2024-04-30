@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  database:
+    image: mysql:8.3
+    env_file: .database.env
+    volumes:
+      - dev-volume:/var/lib/mysql
+    restart: unless-stopped
+    container_name: AIM_Coding_Test-mysql
+    networks:
+      - dev-network
+    ports:
+      - "3306:3306"
+
+  redis:
+    image: redis:7.2.4-alpine
+    container_name: AIM_Coding_Test-redis
+    restart: unless-stopped
+    networks:
+      - dev-network
+    ports:
+      - "6379:6379"
+
+  web_server:
+    env_file: .app.env
+    build:
+      dockerfile: Dockerfile
+    container_name: AIM_Coding_Test-fiber
+    ports:
+      - "3000:3000"
+    depends_on:
+      - database
+      - redis
+
+
+
+volumes:
+  dev-volume: {}
+
+networks:
+  dev-network:
+    driver: bridge

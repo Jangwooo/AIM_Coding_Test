@@ -2,6 +2,9 @@ package database
 
 import (
 	"fmt"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"os"
 	"strconv"
 	"time"
@@ -14,7 +17,7 @@ import (
 )
 
 // MysqlConnection func for connection to Mysql database.
-func MysqlConnection() (*sqlx.DB, error) {
+func MysqlConnection() (*gorm.DB, error) {
 	// Define database connection settings.
 	maxConn, _ := strconv.Atoi(os.Getenv("DB_MAX_CONNECTIONS"))
 	maxIdleConn, _ := strconv.Atoi(os.Getenv("DB_MAX_IDLE_CONNECTIONS"))
@@ -40,11 +43,13 @@ func MysqlConnection() (*sqlx.DB, error) {
 	db.SetMaxIdleConns(maxIdleConn)
 	db.SetConnMaxLifetime(time.Duration(maxLifetimeConn))
 
+	orm, err := gorm.Open(mysql.New(mysql.Config{Conn: db, DefaultStringSize: 191}), &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
+
 	// Try to ping database.
 	if err := db.Ping(); err != nil {
 		defer db.Close() // close database connection
 		return nil, fmt.Errorf("error, not sent ping to database, %w", err)
 	}
 
-	return db, nil
+	return orm, nil
 }

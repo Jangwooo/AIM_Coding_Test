@@ -41,10 +41,10 @@ func GenerateNewTokens(id string, credentials []string) (*Tokens, error) {
 }
 
 func generateNewAccessToken(id string, credentials []string) (string, error) {
-	// Set secret key from .env file.
+	// Set secret key from .app.env file.
 	secret := os.Getenv("JWT_SECRET_KEY")
 
-	// Set expires minutes count for secret key from .env file.
+	// Set expires minutes count for secret key from .app.env file.
 	minutesCount, _ := strconv.Atoi(os.Getenv("JWT_SECRET_KEY_EXPIRE_MINUTES_COUNT"))
 
 	// Create a new claims.
@@ -89,7 +89,7 @@ func generateNewRefreshToken() (string, error) {
 		return "", err
 	}
 
-	// Set expires hours count for refresh key from .env file.
+	// Set expires hours count for refresh key from .app.env file.
 	hoursCount, _ := strconv.Atoi(os.Getenv("JWT_REFRESH_KEY_EXPIRE_HOURS_COUNT"))
 
 	// Set expiration time.

@@ -12,7 +12,7 @@ import (
 
 	_ "github.com/create-go-app/fiber-go-template/docs" // load API Docs files (Swagger)
 
-	_ "github.com/joho/godotenv/autoload" // load .env file automatically
+	_ "github.com/joho/godotenv/autoload" // load .app.env file automatically
 )
 
 // @title API
