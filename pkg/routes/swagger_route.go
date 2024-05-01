@@ -1,16 +1,19 @@
 package routes
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	"net/http"
 
-	swagger "github.com/gofiber/swagger"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // SwaggerRoute func for describe group of API Docs routes.
-func SwaggerRoute(a *fiber.App) {
+func SwaggerRoute(e *gin.Engine) {
 	// Create routes group.
-	route := a.Group("/swagger")
-
+	e.GET("/swagger", func(c *gin.Context) {
+		c.Redirect(http.StatusFound, "/swagger/index.html")
+	})
 	// Routes for GET method:
-	route.Get("*", swagger.HandlerDefault) // get one user by ID
+	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler)) // get one user by ID
 }

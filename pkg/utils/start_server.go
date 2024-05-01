@@ -1,50 +1,54 @@
 package utils
 
 import (
+	"context"
+	"errors"
+	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
-
-	"github.com/gofiber/fiber/v2"
+	"syscall"
+	"time"
 )
 
 // StartServerWithGracefulShutdown function for starting server with a graceful shutdown.
-func StartServerWithGracefulShutdown(a *fiber.App) {
-	// Create channel for idle connections.
-	idleConnsClosed := make(chan struct{})
+func StartServerWithGracefulShutdown(e *gin.Engine) {
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: e,
+	}
 
 	go func() {
-		sigint := make(chan os.Signal, 1)
-		signal.Notify(sigint, os.Interrupt) // Catch OS signals.
-		<-sigint
-
-		// Received an interrupt signal, shutdown.
-		if err := a.Shutdown(); err != nil {
-			// Error from closing listeners, or context timeout:
-			log.Printf("Oops... Server is not shutting down! Reason: %v", err)
+		// service connections
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("listen: %s\n", err)
 		}
-
-		close(idleConnsClosed)
 	}()
 
-	// Build Fiber connection URL.
-	fiberConnURL, _ := ConnectionURLBuilder("fiber")
+	// Wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 5 seconds.
+	quit := make(chan os.Signal)
+	// kill (no param) default send syscanll.SIGTERM
+	// kill -2 is syscall.SIGINT
+	// kill -9 is syscall. SIGKILL but can"t be catch, so don't need add it
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutdown Server ...")
 
-	// Run server.
-	if err := a.Listen(fiberConnURL); err != nil {
-		log.Printf("Oops... Server is not running! Reason: %v", err)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server Shutdown:", err)
 	}
-
-	<-idleConnsClosed
+	// catching ctx.Done(). timeout of 5 seconds.
+	select {
+	case <-ctx.Done():
+		log.Println("timeout of 5 seconds.")
+	}
+	log.Println("Server exiting")
 }
 
-// StartServer func for starting a simple server.
-func StartServer(a *fiber.App) {
-	// Build Fiber connection URL.
-	fiberConnURL, _ := ConnectionURLBuilder("fiber")
-
-	// Run server.
-	if err := a.Listen(fiberConnURL); err != nil {
-		log.Printf("Oops... Server is not running! Reason: %v", err)
-	}
+func StartServer(e *gin.Engine) {
+	_ = e.Run(":3000")
 }
