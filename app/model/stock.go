@@ -1,4 +1,4 @@
-package models
+package model
 
 import (
 	"time"
@@ -14,3 +14,13 @@ type Stock struct {
 	CreatedAt time.Time `gorm:"not null" json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
+
+func (stock *Stock) CreateStock() {
+
+}
+
+func (stock *Stock) GetStockByID() {}
+
+func (stock *Stock) UpdateStock() {}
+
+func (stock *Stock) DeleteStock() {}

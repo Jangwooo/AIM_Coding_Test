@@ -1,4 +1,4 @@
-package models
+package model
 
 import (
 	"github.com/google/uuid"
@@ -19,4 +19,12 @@ type Portfolio struct {
 	CreatedAt      time.Time        `gorm:"not null" json:"created_at"`
 	UpdatedAt      time.Time        `json:"updated_at"`
 	PortfolioItems *[]PortfolioItem `gorm:"foreignKey:PortfolioID" json:"portfolio_items,omitempty"`
+}
+
+func (portfolio *Portfolio) RequestPortfolio() {
+
+}
+
+func (portfolio *Portfolio) GetPortfolioByID() {
+
 }

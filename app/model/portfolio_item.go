@@ -1,4 +1,4 @@
-package models
+package model
 
 import (
 	"github.com/google/uuid"
@@ -12,4 +12,8 @@ type PortfolioItem struct {
 	Quantity    int       `gorm:"not null" json:"quantity"`
 	CreatedAt   time.Time `gorm:"not null" json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+func (portfolioItem PortfolioItem) CreatePortfolioItem() {
+
 }

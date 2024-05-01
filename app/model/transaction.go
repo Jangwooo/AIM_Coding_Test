@@ -1,4 +1,4 @@
-package models
+package model
 
 import (
 	"github.com/google/uuid"
@@ -19,4 +19,8 @@ type Transaction struct {
 	Type      TransactionType `gorm:"not null" json:"type"` // 입금, 출금
 	CreatedAt time.Time       `gorm:"not null" json:"created_at"`
 	UpdatedAt time.Time       `json:"updated_at"`
+}
+
+func (t Transaction) CreateTransaction() {
+
 }
