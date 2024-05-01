@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/create-go-app/fiber-go-template/platform/database"
+	"log"
 	"os"
 
 	"github.com/create-go-app/fiber-go-template/pkg/configs"
@@ -28,6 +30,18 @@ import (
 // @in header
 // @name Authorization
 func main() {
+	db, err := database.OpenDBConnection()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = database.InitDatabase(db)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	log.Print("Connected to database")
+
 	// Define Fiber config.
 	config := configs.FiberConfig()
 

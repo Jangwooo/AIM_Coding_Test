@@ -1,6 +1,9 @@
 package database
 
-import "gorm.io/gorm"
+import (
+	"github.com/create-go-app/fiber-go-template/app/models"
+	"gorm.io/gorm"
+)
 
 // OpenDBConnection func for opening database connection.
 func OpenDBConnection() (*gorm.DB, error) {
@@ -16,4 +19,17 @@ func OpenDBConnection() (*gorm.DB, error) {
 	db, err = MysqlConnection()
 
 	return db, err
+}
+
+func InitDatabase(db *gorm.DB) error {
+	err := db.AutoMigrate(
+		&models.User{},
+		&models.Account{},
+		&models.Transaction{},
+		&models.Portfolio{},
+		&models.PortfolioItem{},
+		&models.Stock{},
+		&models.LoginLog{})
+
+	return err
 }

@@ -44,6 +44,9 @@ func MysqlConnection() (*gorm.DB, error) {
 	db.SetConnMaxLifetime(time.Duration(maxLifetimeConn))
 
 	orm, err := gorm.Open(mysql.New(mysql.Config{Conn: db, DefaultStringSize: 191}), &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
+	if err != nil {
+		return nil, fmt.Errorf("error, not connected to database, %w", err)
+	}
 
 	// Try to ping database.
 	if err := db.Ping(); err != nil {
