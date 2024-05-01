@@ -22,12 +22,13 @@ services:
     ports:
       - "6379:6379"
 
-  web_server:
+  web_server_dev:
     env_file: .app.env
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: AIM_Coding_Test-fiber
+      target: dev
+    container_name: AIM_Coding_Test-fiber_dev
     ports:
       - "3000:3000"
     depends_on:
@@ -35,6 +36,21 @@ services:
       - redis
     volumes:
       - ./:/build
+    networks:
+      - dev-network
+
+  web_server_prod:
+    env_file: .app.env
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: prod
+    container_name: AIM_Coding_Test-fiber_prod
+    ports:
+      - "3000:3000"
+    depends_on:
+      - database
+      - redis
     networks:
       - dev-network
 

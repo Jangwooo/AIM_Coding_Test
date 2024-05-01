@@ -1,18 +1,18 @@
 package main
 
 import (
-	"github.com/create-go-app/fiber-go-template/platform/database"
+	"fmt"
+	"github.com/Jangwooo/AIM_Coding_Test/app/model"
+	"github.com/Jangwooo/AIM_Coding_Test/platform/database"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"log"
 	"os"
 
-	"github.com/create-go-app/fiber-go-template/pkg/configs"
-	"github.com/create-go-app/fiber-go-template/pkg/middleware"
-	"github.com/create-go-app/fiber-go-template/pkg/routes"
-	"github.com/create-go-app/fiber-go-template/pkg/utils"
+	"github.com/Jangwooo/AIM_Coding_Test/pkg/routes"
+	"github.com/Jangwooo/AIM_Coding_Test/pkg/utils"
 
-	"github.com/gofiber/fiber/v2"
-
-	_ "github.com/create-go-app/fiber-go-template/docs" // load API Docs files (Swagger)
+	_ "github.com/Jangwooo/AIM_Coding_Test/docs" // load API Docs files (Swagger)
 
 	_ "github.com/joho/godotenv/autoload" // load .app.env file automatically
 )
@@ -30,37 +30,43 @@ import (
 // @in header
 // @name Authorization
 func main() {
-	db, err := database.OpenDBConnection()
+	_ = godotenv.Load(".app.env")
+	db := database.OpenDBConnection()
+
+	err := db.AutoMigrate(
+		&model.User{},
+		&model.Account{},
+		&model.Transaction{},
+		&model.Portfolio{},
+		&model.PortfolioItem{},
+		&model.Stock{},
+		&model.LoginLog{})
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(fmt.Errorf("error initializing database: %w", err))
 	}
 
-	err = database.InitDatabase(db)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	log.Print("Connected to database")
+	log.Print("Connected to database & Successfully initialized")
 
 	// Define Fiber config.
-	config := configs.FiberConfig()
 
-	// Define a new Fiber app with config.
-	app := fiber.New(config)
+	// Define a new Gin app with config.
+	app := gin.Default()
 
 	// Middlewares.
-	middleware.FiberMiddleware(app) // Register Fiber's middleware for app.
 
 	// Routes.
-	routes.SwaggerRoute(app)  // Register a route for API Docs (Swagger).
-	routes.PublicRoutes(app)  // Register a public routes for app.
-	routes.PrivateRoutes(app) // Register a private routes for app.
-	routes.NotFoundRoute(app) // Register route for 404 Error.
+	routes.SwaggerRoute(app) // Register a route for API Docs (Swagger).
+	routes.PublicRoutes(app) // Register a public routes for app.
 
 	// Start server (with or without graceful shutdown).
-	if os.Getenv("STAGE_STATUS") == "dev" {
+	switch os.Getenv("STAGE_STATUS") {
+	case "dev":
+		gin.SetMode("debug")
 		utils.StartServer(app)
-	} else {
+
+	case "prod":
+		gin.SetMode("release")
 		utils.StartServerWithGracefulShutdown(app)
+
 	}
 }
