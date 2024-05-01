@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/create-go-app/fiber-go-template/pkg/utils"
+	"github.com/Jangwooo/AIM_Coding_Test/pkg/utils"
 
 	"github.com/jmoiron/sqlx"
 
@@ -26,9 +26,10 @@ func MysqlConnection() (*gorm.DB, error) {
 	// Build Mysql connection URL.
 	mysqlConnURL, err := utils.ConnectionURLBuilder("mysql")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error, not connected to database, %w", err)
 	}
 
+	fmt.Printf(mysqlConnURL)
 	// Define database connection for Mysql.
 	db, err := sqlx.Connect("mysql", mysqlConnURL)
 	if err != nil {
