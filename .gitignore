@@ -6,6 +6,7 @@
 
 # Temporary files
 tmp/
+.air.toml
 
 # Files
 *.out
