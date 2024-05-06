@@ -11,23 +11,6 @@ import (
 	"net/http"
 )
 
-// AddStock             godoc
-// @Summary      증권 추가
-// @Description  증권 정보를 database에 추가
-// @Router       /stock/ [post]
-// @Tags         Stock
-// @Accept 		 json
-// @Produce      json
-// @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name access-token
-// @description only admin
-// @Param user_input body model.CreateStockRequest true "유저 정보"
-//
-// @Success      200  {object} model.MessageOnlyResponse
-// @Failure 400 {object} model.MessageOnlyResponse
-// @Failure 409 {object} model.MessageOnlyResponse
-// @Failure 500 {object} model.MessageOnlyResponse
 func AddStock(c *gin.Context) {
 	r := new(model.CreateStockRequest)
 	err := c.Bind(r)
@@ -62,11 +45,6 @@ func AddStock(c *gin.Context) {
 
 func GetStockByCode(c *gin.Context) {
 	sid := c.Param("stock_id")
-
-	type response struct {
-		Message string
-		Data    []model.Stock
-	}
 
 	s, err := service.GetStockByCode(sid)
 	if err != nil {

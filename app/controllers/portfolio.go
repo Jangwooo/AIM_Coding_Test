@@ -68,11 +68,7 @@ func GetPortfolio(c *gin.Context) {
 	pid := c.Param("portfolio_id")
 	uid := c.GetHeader("user_id")
 
-	p := &model.Portfolio{
-		ID: pid,
-	}
-
-	p, err := p.GetPortfolioByID()
+	p, err := service.GetPortfolioByID(pid)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{
@@ -103,11 +99,7 @@ func GetPortfolio(c *gin.Context) {
 func GetPortfolioList(c *gin.Context) {
 	uid := c.GetHeader("user_id")
 
-	p := &model.Portfolio{
-		UserID: uid,
-	}
-
-	plist, err := p.GetPortfolioList()
+	plist, err := service.GetPortfolioList(uid)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{
