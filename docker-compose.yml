@@ -25,23 +25,6 @@ services:
     ports:
       - "6379:6379"
 
-#  web_server_dev:
-#    env_file: .app.env
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      target: dev
-#    container_name: AIM_Coding_Test-gin_dev
-#    ports:
-#      - "3000:3000"
-#    depends_on:
-#      - database
-#      - redis
-#    volumes:
-#      - ./:/build
-#    networks:
-#      - dev-network
-
   web_server_prod:
     env_file: .app.env
     build:
