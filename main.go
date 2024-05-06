@@ -14,8 +14,6 @@ import (
 	"github.com/Jangwooo/AIM_Coding_Test/pkg/routes"
 	"github.com/Jangwooo/AIM_Coding_Test/pkg/utils"
 
-	_ "github.com/Jangwooo/AIM_Coding_Test/docs" // load API Docs files (Swagger)
-
 	_ "github.com/joho/godotenv/autoload" // load .app.env file automatically
 )
 
@@ -62,7 +60,6 @@ func main() {
 	app.Use(sessions.Sessions("access", store))
 
 	// Routes.
-	routes.SwaggerRoute(app) // Register a route for API Docs (Swagger).
 	routes.PublicRoutes(app) // Register a public routes for app.
 
 	// Start server (with or without graceful shutdown).
