@@ -1,19 +1,275 @@
-basePath: /api
+basePath: /api/v1
+definitions:
+  controllers.GetStockByCode.response:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.Stock'
+        type: array
+      message:
+        type: string
+    type: object
+  controllers.Login.response:
+    properties:
+      access_token:
+        type: string
+      message:
+        type: string
+    type: object
+  model.CreateStockRequest:
+    properties:
+      stock_id:
+        type: string
+      stock_name:
+        type: string
+      stock_price:
+        type: integer
+    required:
+    - stock_id
+    - stock_name
+    - stock_price
+    type: object
+  model.LoginRequest:
+    properties:
+      pwd:
+        type: string
+      user_id:
+        type: string
+    required:
+    - pwd
+    - user_id
+    type: object
+  model.MessageOnlyResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  model.SingUpRequest:
+    properties:
+      pwd:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    required:
+    - pwd
+    - user_id
+    - username
+    type: object
+  model.Stock:
+    properties:
+      createdAt:
+        type: string
+      price:
+        type: integer
+      stock_id:
+        type: string
+      stock_name:
+        type: string
+      stock_transaction:
+        items:
+          $ref: '#/definitions/model.StockTransaction'
+        type: array
+      updatedAt:
+        type: string
+    type: object
+  model.StockTransaction:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      price:
+        type: integer
+      quantity:
+        type: integer
+      stock_id:
+        type: string
+      user_id:
+        type: string
+    type: object
 info:
-  contact:
-    email: your@mail.com
-    name: API Support
-  description: This is an auto-generated API Docs.
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
-  title: API
+  contact: {}
+  description: 코딩 테스트의 원활한 채점을 위한 API 문서 입니다
+  title: AIM 코딩 테스트 과제 API 문서
   version: "1.0"
-paths: {}
-securityDefinitions:
-  ApiKeyAuth:
-    in: header
-    name: Authorization
-    type: apiKey
+paths:
+  /stock/:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        증권 정보를 database에 추가
+        only admin
+      parameters:
+      - description: 유저 정보
+        in: body
+        name: user_input
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateStockRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+      summary: 증권 추가
+      tags:
+      - Stock
+  /stock/:stock_code:
+    delete:
+      parameters:
+      - description: stock 코드
+        in: path
+        name: user_input
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+      summary: 증권 삭제하기
+      tags:
+      - Stock
+    get:
+      parameters:
+      - description: stock 코드
+        in: path
+        name: user_input
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.GetStockByCode.response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+      summary: stock code로 증권정보 불러오기
+      tags:
+      - Stock
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: user id와 password를 받아서 액세스 토큰 발급 후, redis에 액세스 토큰 등록 및 login_log
+        테이블에 기록
+      parameters:
+      - description: 유저 정보
+        in: body
+        name: user_input
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.Login.response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+      summary: 로그인
+      tags:
+      - User
+  /user/logout:
+    delete:
+      description: 헤더에 있는 access-token을 redis에서 제거하여 로그아웃
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+      summary: 로그아웃
+      tags:
+      - User
+  /user/signup:
+    post:
+      consumes:
+      - application/json
+      description: user id와 password를 받아서 데이터베이스에 등록시킴
+      parameters:
+      - description: 유저 정보
+        in: body
+        name: user_input
+        required: true
+        schema:
+          $ref: '#/definitions/model.SingUpRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.MessageOnlyResponse'
+      summary: 회원가입
+      tags:
+      - User
 swagger: "2.0"

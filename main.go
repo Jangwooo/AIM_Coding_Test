@@ -1,9 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"github.com/Jangwooo/AIM_Coding_Test/app/model"
+	"github.com/Jangwooo/AIM_Coding_Test/pkg/middleware"
 	"github.com/Jangwooo/AIM_Coding_Test/platform/database"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"log"
@@ -17,35 +19,36 @@ import (
 	_ "github.com/joho/godotenv/autoload" // load .app.env file automatically
 )
 
-// @title API
+// @title AIM 코딩 테스트 과제 API 문서
 // @version 1.0
-// @description This is an auto-generated API Docs.
-// @termsOfService http://swagger.io/terms/
-// @contact.name API Support
-// @contact.email your@mail.com
-// @license.name Apache 2.0
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @BasePath /api
-// @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name Authorization
-func main() {
-	_ = godotenv.Load(".app.env")
-	db := database.OpenDBConnection()
+// @description 코딩 테스트의 원활한 채점을 위한 API 문서 입니다
+// @BasePath /api/v1
 
-	err := db.AutoMigrate(
+func main() {
+	err := godotenv.Load(".app.env")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	db, err := database.GetConnection()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = db.AutoMigrate(
 		&model.User{},
 		&model.Account{},
 		&model.Transaction{},
 		&model.Portfolio{},
 		&model.PortfolioItem{},
 		&model.Stock{},
-		&model.LoginLog{})
+		&model.LoginLog{},
+		&model.StockTransaction{})
 	if err != nil {
-		log.Fatal(fmt.Errorf("error initializing database: %w", err))
+		log.Fatal(err.Error())
 	}
 
-	log.Print("Connected to database & Successfully initialized")
+	log.Println("Connected to database & Successfully initialized")
 
 	// Define Fiber config.
 
@@ -53,6 +56,10 @@ func main() {
 	app := gin.Default()
 
 	// Middlewares.
+	app.Use(middleware.Timeout())
+
+	store, _ := redis.NewStore(100, "tcp", utils.ConnectionURLBuilder("redis"), os.Getenv("REDIS_PASSWORD"), []byte("secret"))
+	app.Use(sessions.Sessions("access", store))
 
 	// Routes.
 	routes.SwaggerRoute(app) // Register a route for API Docs (Swagger).

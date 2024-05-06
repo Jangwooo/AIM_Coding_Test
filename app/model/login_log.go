@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/Jangwooo/AIM_Coding_Test/platform/database"
 	"github.com/google/uuid"
 	"time"
 )
@@ -13,13 +14,19 @@ const (
 )
 
 type LoginLog struct {
-	ID        uuid.UUID `gorm:"primaryKey"`
+	ID        string    `gorm:"primaryKey"` // UUID
 	UserID    string    `gorm:"not null" json:"user_id"`
 	LoginType LoginType `gorm:"not null" json:"login_type"`
 	CreatedAt time.Time `gorm:"not null" json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (l LoginLog) CreateLoginLog() {
+func (l *LoginLog) CreateLoginLog() error {
+	db, err := database.GetConnection()
+	if err != nil {
+		return err
+	}
 
+	l.ID = uuid.New().String()
+
+	return db.Create(l).Error
 }

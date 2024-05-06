@@ -9,40 +9,58 @@ import (
 type Account struct {
 	ID           string        `gorm:"primaryKey" json:"id"`
 	UserID       string        `gorm:"not null" json:"user_id"`
-	Balance      int64         `gorm:"not null;default:0" json:"balance"` // 잔고 (음수 금액 불가능, 소숫점 사용 불가능)
+	Balance      uint          `gorm:"not null;default:0" json:"balance"` // 잔고 (음수 금액 불가능, 소숫점 사용 불가능)
 	CreatedAt    time.Time     `gorm:"not null" json:"created_at,omitempty"`
 	UpdatedAt    time.Time     `json:"updated_at,omitempty"`
 	Transactions []Transaction `gorm:"foreignKey:AccountID" json:"transactions,omitempty"`
 }
 
-func (account *Account) OpenAccount() {
-	db := database.OpenDBConnection()
+func (a *Account) CreateAccount() error {
+	db, err := database.GetConnection()
+	if err != nil {
+		return err
+	}
 
-	db.Create(account)
+	return db.Create(a).Error
 }
 
-func (account *Account) UpdateAccountBalance(amount int64) error {
-	db := database.OpenDBConnection()
+func (a *Account) GetAccountByID() (*Account, error) {
+	db, err := database.GetConnection()
+	if err != nil {
+		return nil, err
+	}
 
-	return db.Update("balance", gorm.Expr("balance + ?", amount)).Where("id = ?", account.ID).Error
+	err = db.First(a).Error
+	return a, err
 }
 
-func (account *Account) GetBalance(accountID string) (int64, error) {
-	db := database.OpenDBConnection()
+func (a *Account) GetAccountList() ([]Account, error) {
+	db, err := database.GetConnection()
+	if err != nil {
+		return nil, err
+	}
 
-	err := db.Where("account_id = ?", accountID).Find(account).Error
+	var accounts []Account
 
-	return account.Balance, err
+	err = db.Find(&accounts, "user_id = ?", a.UserID).Order("created_at desc").Error
+
+	return accounts, err
 }
 
-func (account *Account) Deposit(amount int64) error {
-	db := database.OpenDBConnection()
+func (a *Account) Deposit(amount uint) error {
+	db, err := database.GetConnection()
+	if err != nil {
+		return err
+	}
 
-	return db.Update("balance", gorm.Expr("balance + ?", amount)).Where("id = ?", account.ID).Error
+	return db.Model(a).Update("balance", gorm.Expr("balance + ?", amount)).Error
 }
 
-func (account *Account) Withdraw(amount int64) error {
-	db := database.OpenDBConnection()
+func (a *Account) Withdraw(amount uint) error {
+	db, err := database.GetConnection()
+	if err != nil {
+		return err
+	}
 
-	return db.Update("balance", gorm.Expr("balance - ?", amount)).Where("id = ?", account.ID).Error
+	return db.Model(a).Update("balance", gorm.Expr("balance - ?", amount)).Error
 }

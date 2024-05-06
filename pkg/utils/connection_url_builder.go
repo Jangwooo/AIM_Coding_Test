@@ -6,7 +6,7 @@ import (
 )
 
 // ConnectionURLBuilder func for building URL connection.
-func ConnectionURLBuilder(n string) (string, error) {
+func ConnectionURLBuilder(n string) string {
 	// Define URL to connection.
 	var url string
 
@@ -29,18 +29,7 @@ func ConnectionURLBuilder(n string) (string, error) {
 			os.Getenv("REDIS_HOST"),
 			os.Getenv("REDIS_PORT"),
 		)
-	case "fiber":
-		// URL for Fiber connection.
-		url = fmt.Sprintf(
-			"%s:%s",
-			os.Getenv("SERVER_HOST"),
-			os.Getenv("SERVER_PORT"),
-		)
-	default:
-		// Return error message.
-		return "", fmt.Errorf("connection name '%v' is not supported", n)
 	}
-
 	// Return connection URL.
-	return url, nil
+	return url
 }

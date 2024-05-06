@@ -4,8 +4,11 @@ services:
   database:
     image: mysql:8.3
     env_file: .database.env
+    command: --init-file /data/application/init.sql
     volumes:
       - dev-volume:/var/lib/mysql
+      - ./platform/database/init.d/init.sql:/data/application/init.sql
+      - ./platform/database/conf.d/my.cnf:/db/conf.d:/etc/mysql/conf.d/my.cnf
     restart: unless-stopped
     container_name: AIM_Coding_Test-mysql
     networks:
@@ -22,22 +25,22 @@ services:
     ports:
       - "6379:6379"
 
-  web_server_dev:
-    env_file: .app.env
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: dev
-    container_name: AIM_Coding_Test-fiber_dev
-    ports:
-      - "3000:3000"
-    depends_on:
-      - database
-      - redis
-    volumes:
-      - ./:/build
-    networks:
-      - dev-network
+#  web_server_dev:
+#    env_file: .app.env
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#      target: dev
+#    container_name: AIM_Coding_Test-gin_dev
+#    ports:
+#      - "3000:3000"
+#    depends_on:
+#      - database
+#      - redis
+#    volumes:
+#      - ./:/build
+#    networks:
+#      - dev-network
 
   web_server_prod:
     env_file: .app.env
@@ -45,7 +48,9 @@ services:
       context: .
       dockerfile: Dockerfile
       target: prod
-    container_name: AIM_Coding_Test-fiber_prod
+    container_name: AIM_Coding_Test-gin_prod
+    volumes:
+      - ./docs:/docs
     ports:
       - "3000:3000"
     depends_on:
