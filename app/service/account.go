@@ -72,7 +72,7 @@ func Withdraw(uid, aid string, amount uint) error {
 		UserID: uid,
 	}
 
-	account.GetAccountByID()
+	_, _ = account.GetAccountByID()
 
 	if account.Balance < amount {
 		return pkg.ErrBalanceNotEnough

@@ -48,7 +48,9 @@ func GetConnection() (*gorm.DB, error) {
 
 	// Try to ping database.
 	if err := db.Ping(); err != nil {
-		defer db.Close() // close database connection
+		defer func(db *sqlx.DB) {
+			_ = db.Close()
+		}(db) // close database connection
 		return nil, errors.Wrap(err, pkg.ErrDatabaseOperationFailed.Error())
 	}
 
